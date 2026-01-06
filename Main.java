@@ -27,3 +27,55 @@ public class Main {
 
         runGame(aiBlack2, aiWhite);
     }
+
+    public static void runGame(Object blackPlayer, Object whitePlayer) {
+        Checkers6x6.Board board = new Checkers6x6.Board();
+        Evaluator eval1 = new Evaluator.MaterialMobilityEval();
+        Evaluator eval2 = new Evaluator.ThreatCaptureEval();
+
+        int moveCount = 0;
+        while (!board.isTerminal() && moveCount < 100) {
+            board.print();
+            Checkers6x6.Move move;
+            if (board.blacksTurn) {
+                move = chooseMove(blackPlayer, board);
+                System.out.println("Black plays: " + move);
+            } else {
+                move = chooseMove(whitePlayer, board);
+                System.out.println("White plays: " + move);
+            }
+            if (move == null) break;
+            board.applyMove(move);
+            moveCount++;
+
+            double score1 = eval1.evaluate(board);
+            double score2 = eval2.evaluate(board);
+            System.out.println("MaterialMobilityEval score: " + score1);
+            System.out.println("ThreatCaptureEval score: " + score2);
+            System.out.println("------------------------------------------------");
+        }
+
+        board.print();
+        int res = board.winnerOrDraw();
+        System.out.println("Result: " + (res == +1 ? "Black wins" : res == -1 ? "White wins" : "Draw/ongoing"));
+    }
+
+    private static Checkers6x6.Move chooseMove(Object player, Checkers6x6.Board board) {
+        if (player instanceof Agent) {
+            return ((Agent) player).chooseMove(board);
+        } else if (player instanceof RandomAgent) {
+            return ((RandomAgent) player).chooseMove(board);
+        }
+        return null;
+    }
+
+    // Random Agent
+    static class RandomAgent {
+        Random rng = new Random();
+        public Checkers6x6.Move chooseMove(Checkers6x6.Board b) {
+            List<Checkers6x6.Move> moves = b.generateLegalMoves();
+            if (moves.isEmpty()) return null;
+            return moves.get(rng.nextInt(moves.size()));
+        }
+    }
+}
