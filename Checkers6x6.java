@@ -6,6 +6,7 @@ public class Checkers6x6 {
     public static class Board {
         int[][] cells = new int[6][6];
         boolean blacksTurn = true; // black starts
+        Set<String> seenPositions = new HashSet<>();
 
         public Board() {
             init();
@@ -35,6 +36,16 @@ public class Checkers6x6 {
                 for (int c = 0; c < 6; c++) if (cells[r][c] == 0) cells[r][c] = 2;
             }
             blacksTurn = true;
+        }
+        private String boardSignature() {
+            StringBuilder sb = new StringBuilder();
+            for (int r = 0; r < 6; r++) {
+                for (int c = 0; c < 6; c++) {
+            sb.append(cells[r][c]).append(",");
+                }
+            }
+            sb.append(blacksTurn ? "B" : "W");
+                return sb.toString();
         }
 
         public List<Move> generateLegalMoves() {
@@ -179,6 +190,7 @@ public class Checkers6x6 {
             }
             // toggle turn
             blacksTurn = !blacksTurn;
+            seenPositions.add(boardSignature());
         }
 
         public boolean isTerminal() {
@@ -195,23 +207,49 @@ public class Checkers6x6 {
             List<Move> legal = generateLegalMoves();
             return legal.isEmpty();
         }
-
-        public int winnerOrDraw() {
-            // return +1 black wins, -1 white wins, 0 draw/ongoing
-            if (!isTerminal()) return 0;
-            // If one player has no moves at their turn, the other won.
-            int blackCount = 0, whiteCount = 0;
-            for (int r = 0; r < 6; r++) for (int c = 0; c < 6; c++) {
-                int p = cells[r][c];
-                if (p == 1 || p == 3) blackCount++;
-                else if (p == 2 || p == 4) whiteCount++;
+        
+         public int winnerOrDraw() {
+           // +1 black wins, -1 white wins, 0 draw/ongoing
+            if (!isTerminal()) {
+           // بررسی تکرار وضعیت
+            String sig = boardSignature();
+            if (seenPositions.contains(sig)) {
+                return 0; // مساوی به خاطر تکرار
             }
+            return 0; // ادامه بازی
+        }
+
+        int blackCount = 0, whiteCount = 0;
+        for (int r = 0; r < 6; r++) {
+            for (int c = 0; c < 6; c++) {
+            int p = cells[r][c];
+            if (p == 1 || p == 3) blackCount++;
+            else if (p == 2 || p == 4) whiteCount++;
+            }
+        }
+
             if (blackCount == 0) return -1;
             if (whiteCount == 0) return +1;
-            // Stalemate (no legal moves)
-            if (generateLegalMoves().isEmpty()) {
-                return blacksTurn ? -1 : +1; // current player to move has no moves => they lose
-            }
+
+           // اگر هیچ‌کدام حرکت ندارند → مساوی
+            List<Move> movesBlack, movesWhite;
+            boolean prevTurn = blacksTurn;
+
+            blacksTurn = true;
+            movesBlack = generateLegalMoves();
+            blacksTurn = false;
+            movesWhite = generateLegalMoves();
+            blacksTurn = prevTurn;
+
+        if (movesBlack.isEmpty() && movesWhite.isEmpty()) {
+            return 0; // مساوی چون هیچ‌کدام حرکت ندارند
+        }
+
+          // حالت عادی: بازیکن نوبت حرکت نداره → بازنده
+        if (generateLegalMoves().isEmpty()) {
+            return blacksTurn ? -1 : +1;
+        }
+
             return 0;
         }
 
