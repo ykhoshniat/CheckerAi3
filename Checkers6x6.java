@@ -7,6 +7,11 @@ public class Checkers6x6 {
         int[][] cells = new int[6][6];
         boolean blacksTurn = true; // black starts
         Set<String> seenPositions = new HashSet<>();
+        boolean agreedDraw = false;
+        
+         public void setAgreedDraw() {
+        agreedDraw = true;
+    }
 
         public Board() {
             init();

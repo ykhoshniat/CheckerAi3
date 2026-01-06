@@ -76,23 +76,30 @@ public class Main {
             return moves.get(rng.nextInt(moves.size()));
         }
     }
-
+    
     // Human Agent
     static class HumanAgent {
         java.util.Scanner scanner = new java.util.Scanner(System.in);
 
         public Checkers6x6.Move chooseMove(Checkers6x6.Board b) {
-            List<Checkers6x6.Move> moves = b.generateLegalMoves();
-            if (moves.isEmpty()) return null;
+        List<Checkers6x6.Move> moves = b.generateLegalMoves();
+        if (moves.isEmpty()) return null;
 
-            System.out.println("Available moves:");
-            for (int i = 0; i < moves.size(); i++) {
-                System.out.println(i + ": " + moves.get(i));
-            }
-
-            System.out.print("Enter move number: ");
-            int choice = scanner.nextInt();
-            return moves.get(choice);
+        System.out.println("Available moves:");
+        for (int i = 0; i < moves.size(); i++) {
+            System.out.println(i + ": " + moves.get(i));
         }
+
+        System.out.print("Enter move number (or type 'draw' to agree on a draw): ");
+        String input = scanner.next();
+
+        if (input.equalsIgnoreCase("draw")) {
+            b.setAgreedDraw();   // توافق برای مساوی
+            return null;         // برمی‌گردیم تا حلقه بازی متوقف بشه
+        }
+
+        int choice = Integer.parseInt(input);
+        return moves.get(choice);
     }
+}
 }
