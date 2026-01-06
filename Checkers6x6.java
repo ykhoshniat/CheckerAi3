@@ -2,10 +2,10 @@ import java.util.*;
 
 public class Checkers6x6 {
 
-//// خانه‌ها: -1 سفید (نامعتبر)، 0 خالی، 1 مهره سیاه، 2 مهره سفید، 3 شاه سیاه، 4 شاه سفید
+    // Cells: -1 white (invalid), 0 empty, 1 black man, 2 white man, 3 black king, 4 white king
     public static class Board {
         int[][] cells = new int[6][6];
-        boolean blacksTurn = true; // شروع بازی با سیاه
+        boolean blacksTurn = true; // black starts
 
         public Board() {
             init();
@@ -18,18 +18,19 @@ public class Checkers6x6 {
         }
 
         private void init() {
-// مربع‌های سفید نامعتبر را به عنوان -۱ علامت بزنید، مربع‌های سیاه قابل بازی را در ابتدا به عنوان ۰ علامت بزنید.            for (int r = 0; r < 6; r++) {
+            // Mark invalid white squares as -1, playable black squares as 0 initially.
+            for (int r = 0; r < 6; r++) {
                 for (int c = 0; c < 6; c++) {
                     boolean blackSquare = ((r % 2 == 0) && (c % 2 == 1)) || ((r % 2 == 1) && (c % 2 == 0));
                     cells[r][c] = blackSquare ? 0 : -1;
                 }
             }
-// هر بازیکن ۶ مهره را روی خانه‌های سیاه دو ردیف خود قرار دهد:
-// ردیف‌های سیاه: 0 و 1 (پایین برای دیدگاه سیاه اگر از 0 شماره‌گذاری کنیم)
+            // Place 6 men per player on their two ranks' black squares:
+            // Black rows: 0 and 1 (bottom for black perspective if we index from 0)
             for (int r = 0; r <= 1; r++) {
                 for (int c = 0; c < 6; c++) if (cells[r][c] == 0) cells[r][c] = 1;
             }
-// ردیف‌های سفید: ۴ و ۵ (بالا مخصوص سفید)
+            // White rows: 4 and 5 (top for white)
             for (int r = 4; r <= 5; r++) {
                 for (int c = 0; c < 6; c++) if (cells[r][c] == 0) cells[r][c] = 2;
             }
@@ -40,7 +41,7 @@ public class Checkers6x6 {
             int playerMan = blacksTurn ? 1 : 2;
             int playerKing = blacksTurn ? 3 : 4;
 
-// ابتدا همه دنباله‌های ضبط را جمع‌آوری کنید (الزامی)
+            // First collect all capture sequences (mandatory)
             List<Move> captures = new ArrayList<>();
             for (int r = 0; r < 6; r++) {
                 for (int c = 0; c < 6; c++) {
@@ -53,7 +54,7 @@ public class Checkers6x6 {
             }
             if (!captures.isEmpty()) return captures;
 
-// در غیر اینصورت، حرکات ساده
+            // Otherwise, simple moves
             List<Move> moves = new ArrayList<>();
             for (int r = 0; r < 6; r++) {
                 for (int c = 0; c < 6; c++) {
@@ -72,8 +73,8 @@ public class Checkers6x6 {
             boolean isBlack = (piece == 1 || piece == 3);
             boolean isKing = (piece == 3 || piece == 4);
 
-            int[][] dirsManBlack = {{1, -1}, {1, 1}};   // فوروارد برای سیاه
-            int[][] dirsManWhite = {{-1, -1}, {-1, 1}}; // فوروارد برای سفید
+            int[][] dirsManBlack = {{1, -1}, {1, 1}};   // forward for black
+            int[][] dirsManWhite = {{-1, -1}, {-1, 1}}; // forward for white
             int[][] dirsKing = {{1, -1}, {1, 1}, {-1, -1}, {-1, 1}};
 
             int[][] dirs;
@@ -84,7 +85,7 @@ public class Checkers6x6 {
                 int nr = r + d[0], nc = c + d[1];
                 if (inBounds(nr, nc) && cells[nr][nc] == 0) {
                     Move m = new Move(r, c);
-                    m.addStep(nr, nc, -1, -1); // حرکت معمولی بدون گرفتن مهره حریف
+                    m.addStep(nr, nc, -1, -1); // no capture
                     res.add(m);
                 }
             }
@@ -105,9 +106,9 @@ public class Checkers6x6 {
             if (isKing) dirs = dirsKing;
             else dirs = isBlack ? dirsManBlack : dirsManWhite;
 
-// DFS برای پرش چندگانه
+            // DFS for multi-jump
             Move start = new Move(r, c);
-            boolean[] found = new boolean[1]; // علامت وجود حداقل یک حرکت پرشی
+            boolean[] found = new boolean[1]; // flag for at least one capture
             dfsCaptures(r, c, piece, dirs, start, res, found);
             return res;
         }
@@ -120,17 +121,17 @@ public class Checkers6x6 {
                 if (inBounds(lr, lc) && inBounds(mr, mc) && cells[lr][lc] == 0) {
                     int mid = cells[mr][mc];
                     if (isOpponentPiece(piece, mid)) {
-                        // شبیه‌سازی مرحله
+                        // simulate step
                         int prevMid = cells[mr][mc];
                         int prevFrom = cells[r][c];
                         cells[r][c] = 0;
-                        cells[mr][mc] = 0; // بلافاصله حذف شد
+                        cells[mr][mc] = 0; // captured removed immediately
                         cells[lr][lc] = piece;
 
                         current.addStep(lr, lc, mr, mc);
 
-// در صورتی که در طول زنجیره مهره تبدیل شود، جهت‌ها دوباره محاسبه می‌شوند: پیاده‌ها همچنان فقط به جلو می‌زنند (تنوع قانون).
-// این پیاده‌سازی قانون استاندارد را اعمال می‌کند: مردی که در وسط نوبت شاه می‌شود، همچنان به گرفتن مهره‌ها به عنوان شاه ادامه می‌دهد.
+                        // Recompute dirs if kinging occurs mid-chain: men still capture forward only (rule variation).
+                        // This implementation enforces standard rule: a man that becomes king mid-turn continues capturing as a king.
                         int newPiece = piece;
                         if (!isKingPiece(piece)) {
                             if (shouldKinging(newPiece, lr)) {
@@ -153,7 +154,7 @@ public class Checkers6x6 {
                 }
             }
             if (!extended && current.hasCapture()) {
-                acc.add(new Move(current)); 
+                acc.add(new Move(current)); // add terminal capture sequence
                 found[0] = true;
             }
         }
@@ -165,18 +166,18 @@ public class Checkers6x6 {
             int cr = sr, cc = sc;
             for (Move.Step st : m.steps) {
                 if (st.captureR != -1) {
-                    cells[st.captureR][st.captureC] = 0; // حذف کردن
+                    cells[st.captureR][st.captureC] = 0; // remove captured
                 }
                 cr = st.toR; cc = st.toC;
             }
-
+            // place piece at final
             cells[cr][cc] = piece;
 
-// ارتقا در صورت نیاز (پایان حرکت)
+            // promote if needed (end of move)
             if (!isKingPiece(piece) && shouldKinging(piece, cr)) {
                 cells[cr][cc] = promote(piece);
             }
-// تغییر حالت نوبت
+            // toggle turn
             blacksTurn = !blacksTurn;
         }
 
@@ -196,9 +197,9 @@ public class Checkers6x6 {
         }
 
         public int winnerOrDraw() {
-//بازگشت +1 برد سیاه، -1 برد سفید، 0 مساوی/در حال انجام
+            // return +1 black wins, -1 white wins, 0 draw/ongoing
             if (!isTerminal()) return 0;
-// اگر یک بازیکن در نوبت خود حرکتی نداشته باشد، دیگری برنده می‌شود.
+            // If one player has no moves at their turn, the other won.
             int blackCount = 0, whiteCount = 0;
             for (int r = 0; r < 6; r++) for (int c = 0; c < 6; c++) {
                 int p = cells[r][c];
@@ -207,9 +208,9 @@ public class Checkers6x6 {
             }
             if (blackCount == 0) return -1;
             if (whiteCount == 0) return +1;
-// بن‌بست (هیچ حرکت قانونی وجود ندارد)
+            // Stalemate (no legal moves)
             if (generateLegalMoves().isEmpty()) {
-                return blacksTurn ? -1 : +1; // بازیکن فعلی که باید حرکت کند هیچ حرکتی ندارد => او بازنده است
+                return blacksTurn ? -1 : +1; // current player to move has no moves => they lose
             }
             return 0;
         }
