@@ -13,19 +13,15 @@ public class Main {
         RandomAgent randWhite = new RandomAgent();
         runGame(aiBlack1, randWhite);
 
-        //  Agent (Black) vs Agent (White)
-        System.out.println("\n=== state2: Agent (Black) vs Agent (White) ===");
+        //  Agent (Black) vs Human (White)
+        System.out.println("\n=== state2: Agent (Black) vs Human (White) ===");
         Agent aiBlack2 = new Agent();
         aiBlack2.maxDepth = 4;
         aiBlack2.useAlphaBeta = true;
         aiBlack2.eval = new Evaluator.MaterialMobilityEval();
 
-        Agent aiWhite = new Agent();
-        aiWhite.maxDepth = 4;
-        aiWhite.useAlphaBeta = true;
-        aiWhite.eval = new Evaluator.ThreatCaptureEval();
-
-        runGame(aiBlack2, aiWhite);
+        HumanAgent humanWhite = new HumanAgent();
+        runGame(aiBlack2, humanWhite);
     }
 
     public static void runGame(Object blackPlayer, Object whitePlayer) {
@@ -65,6 +61,8 @@ public class Main {
             return ((Agent) player).chooseMove(board);
         } else if (player instanceof RandomAgent) {
             return ((RandomAgent) player).chooseMove(board);
+        } else if (player instanceof HumanAgent) {
+            return ((HumanAgent) player).chooseMove(board);
         }
         return null;
     }
@@ -76,6 +74,25 @@ public class Main {
             List<Checkers6x6.Move> moves = b.generateLegalMoves();
             if (moves.isEmpty()) return null;
             return moves.get(rng.nextInt(moves.size()));
+        }
+    }
+
+    // Human Agent
+    static class HumanAgent {
+        java.util.Scanner scanner = new java.util.Scanner(System.in);
+
+        public Checkers6x6.Move chooseMove(Checkers6x6.Board b) {
+            List<Checkers6x6.Move> moves = b.generateLegalMoves();
+            if (moves.isEmpty()) return null;
+
+            System.out.println("Available moves:");
+            for (int i = 0; i < moves.size(); i++) {
+                System.out.println(i + ": " + moves.get(i));
+            }
+
+            System.out.print("Enter move number: ");
+            int choice = scanner.nextInt();
+            return moves.get(choice);
         }
     }
 }
