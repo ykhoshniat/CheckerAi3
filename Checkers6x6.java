@@ -245,3 +245,36 @@ public class Checkers6x6 {
             System.out.println();
         }
     }
+    
+     public static class Move {
+        final int startR, startC;
+        final List<Step> steps = new ArrayList<>();
+        public static class Step {
+            final int toR, toC;
+            final int captureR, captureC; // -1 if none
+            Step(int toR, int toC, int captureR, int captureC) {
+                this.toR = toR; this.toC = toC; this.captureR = captureR; this.captureC = captureC;
+            }
+        }
+        public Move(int sr, int sc) { this.startR = sr; this.startC = sc; }
+        public Move(Move other) {
+            this.startR = other.startR; this.startC = other.startC;
+            for (Step s : other.steps) steps.add(new Step(s.toR, s.toC, s.captureR, s.captureC));
+        }
+        public void addStep(int toR, int toC, int capR, int capC) { steps.add(new Step(toR, toC, capR, capC)); }
+        public void removeLastStep() { steps.remove(steps.size() - 1); }
+        public boolean hasCapture() {
+            for (Step s : steps) if (s.captureR != -1) return true;
+            return false;
+        }
+
+        @Override public String toString() {
+            StringBuilder sb = new StringBuilder("(" + startR + "," + startC + ")");
+            for (Step s : steps) {
+                sb.append(" -> ").append("(").append(s.toR).append(",").append(s.toC).append(")");
+                if (s.captureR != -1) sb.append(" x(").append(s.captureR).append(",").append(s.captureC).append(")");
+            }
+            return sb.toString();
+        }
+    }
+}
