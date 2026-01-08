@@ -1,6 +1,7 @@
 interface Evaluator {
     double evaluate(Checkers6x6.Board b);
 
+    
     // Evaluator 1: Material + Mobility + King weight + Advancement + Center control
     class MaterialMobilityEval implements Evaluator {
         public double evaluate(Checkers6x6.Board b) {
