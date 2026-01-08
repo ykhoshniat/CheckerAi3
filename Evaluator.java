@@ -73,6 +73,7 @@ interface Evaluator {
             return count;
         }
 
+        
         private int exposedPieces(Checkers6x6.Board b, boolean forBlack) {
             int exposed = 0;
             int[][] dirsManBlack = {{1, -1}, {1, 1}};
