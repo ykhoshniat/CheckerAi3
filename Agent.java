@@ -53,6 +53,7 @@ class Agent {
         return v;
     }
 
+    
     private double minValue(Checkers6x6.Board b, int depth) {
         nodesMinimax++;
         if (depth == 0 || b.isTerminal()) return terminalOrEval(b);
@@ -107,7 +108,7 @@ class Agent {
         return v;
     }
 
-    
+
     private double terminalOrEval(Checkers6x6.Board b) {
         int win = b.winnerOrDraw();
         if (win == +1) return Double.POSITIVE_INFINITY / 2;  // strong positive
